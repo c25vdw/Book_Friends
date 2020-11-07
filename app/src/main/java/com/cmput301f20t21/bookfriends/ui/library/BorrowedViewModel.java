@@ -1,3 +1,12 @@
+/*
+ * BorrowedViewModel.java
+ * Version: 1.0
+ * Date: November 4, 2020
+ * Copyright (c) 2020. Book Friends Team
+ * All rights reserved.
+ * github URL: https://github.com/CMPUT301F20T21/Book_Friends
+ */
+
 package com.cmput301f20t21.bookfriends.ui.library;
 
 import androidx.lifecycle.LiveData;
@@ -8,22 +17,28 @@ import com.cmput301f20t21.bookfriends.entities.Book;
 import com.cmput301f20t21.bookfriends.repositories.AuthRepository;
 import com.cmput301f20t21.bookfriends.repositories.BookRepository;
 import com.cmput301f20t21.bookfriends.repositories.RequestRepository;
+import com.cmput301f20t21.bookfriends.repositories.api.IAuthRepository;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
-
+/**
+ * The ViewModel for BorrowedListFragment
+ */
 public class BorrowedViewModel extends ViewModel {
     private RequestRepository requestRepository = RequestRepository.getInstance();
     private BookRepository bookRepository = BookRepository.getInstance();
-    private AuthRepository authRepository = AuthRepository.getInstance();
+    private IAuthRepository authRepository = AuthRepository.getInstance();
 
     private MutableLiveData<List<Book>> books;
     private MutableLiveData<Integer> updatedPosition;
 
+    /**
+     * get the list of books from MutableLiveData
+     * @return a list of books
+     */
     public LiveData<List<Book>> getBooks() {
         if (books == null) {
             books = new MutableLiveData<>();
@@ -32,6 +47,10 @@ public class BorrowedViewModel extends ViewModel {
         return books;
     }
 
+    /**
+     * get the latest updated position of the book
+     * @return the updated position
+     */
     public LiveData<Integer> getUpdatedPosition() {
         if (updatedPosition == null) {
             updatedPosition = new MutableLiveData<>(0);
@@ -62,17 +81,11 @@ public class BorrowedViewModel extends ViewModel {
 
             bookRepository.batchGetBooks(bookIds).addOnSuccessListener(bookDocumentsSnapshots -> {
                 List<DocumentSnapshot> documents = bookDocumentsSnapshots.getDocuments();
-                books.setValue(IntStream.range(0, documents.size()).mapToObj(i -> {
-                    DocumentSnapshot document = documents.get(i);
-                    Book book = bookRepository.getBookFromDocument(document);
-                    if (document.get("imageName") != null) {
-                        bookRepository.getImage((String) document.get("imageName")).addOnSuccessListener(uri -> {
-                            book.setImageUri(uri);
-                            updatedPosition.setValue(i);
-                        });
-                    }
-                    return book;
-                }).collect(Collectors.toList()));
+                books.setValue(
+                        documents.stream()
+                                .map(document -> document.toObject(Book.class))
+                                .collect(Collectors.toList())
+                );
             }).addOnFailureListener(e -> {
                 // TODO: handle failure here
             });

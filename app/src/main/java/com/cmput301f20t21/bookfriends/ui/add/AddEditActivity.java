@@ -8,8 +8,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -18,16 +18,16 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.bumptech.glide.Glide;
 import com.cmput301f20t21.bookfriends.R;
-import com.cmput301f20t21.bookfriends.datatransfer.BookDataTransferHelper;
 import com.cmput301f20t21.bookfriends.entities.Book;
 import com.cmput301f20t21.bookfriends.enums.BOOK_ACTION;
 import com.cmput301f20t21.bookfriends.enums.BOOK_ERROR;
 import com.cmput301f20t21.bookfriends.ui.library.OwnedListFragment;
 import com.cmput301f20t21.bookfriends.ui.scanner.ScannerAddActivity;
-import com.cmput301f20t21.bookfriends.ui.scanner.ScannerBaseActivity;
+import com.cmput301f20t21.bookfriends.utils.GlideApp;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 public class AddEditActivity extends AppCompatActivity {
     private Button scanButton;
@@ -35,6 +35,7 @@ public class AddEditActivity extends AppCompatActivity {
     private ImageView bookImage;
     private Uri bookImageUri;
     private TextInputLayout isbnLayout;
+    private EditText isbnEditText;
     private TextInputLayout titleLayout;
     private TextInputLayout authorLayout;
     private TextInputLayout descriptionLayout;
@@ -46,6 +47,12 @@ public class AddEditActivity extends AppCompatActivity {
     private static final int IMAGE_PICK_CODE = 1000;
     private static final int PERMISSION_CODE = 1001;
 
+    public static final String NEW_BOOK_INTENT_KEY = "com.cmput301f20t21.bookfriends.NEW_BOOK";
+    public static final String OLD_BOOK_INTENT_KEY = "com.cmput301f20t21.bookfriends.OLD_BOOK";
+    public static final String UPDATED_BOOK_INTENT_KEY = "com.cmput301f20t21.bookfriends.UPDATED_BOOK";
+
+    public static final int REQUEST_GET_SCANNED_ISBN = 2000;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,6 +62,7 @@ public class AddEditActivity extends AppCompatActivity {
         uploadImgButton = findViewById(R.id.upload_cover_button);
         bookImage = findViewById(R.id.book_image_view); // will be replaced with actual image
         isbnLayout = findViewById(R.id.ISBN_layout);
+        isbnEditText = findViewById(R.id.isbn_edit_text);
         titleLayout = findViewById(R.id.title_layout);
         authorLayout = findViewById(R.id.author_layout);
         descriptionLayout = findViewById(R.id.description_layout);
@@ -62,36 +70,28 @@ public class AddEditActivity extends AppCompatActivity {
 
         model = new ViewModelProvider(this).get(AddEditViewModel.class);
 
-        scanButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openScanner();
-            }
-        });
+        scanButton.setOnClickListener(view -> openScanner());
 
-        uploadImgButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // check permission
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
-                        == PackageManager.PERMISSION_DENIED) { // permission not granted, ask for it
-                        String[] permission = {Manifest.permission.READ_EXTERNAL_STORAGE};
-                        // pop up to request permission
-                        requestPermissions(permission, PERMISSION_CODE);
-                    } else { // permission granted
-                        uploadImg();
-                    }
-                } else { // if android version is less than marshmallow 6.0.1
+        uploadImgButton.setOnClickListener(view -> {
+            // check permission
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_DENIED) { // permission not granted, ask for it
+                    String[] permission = {Manifest.permission.READ_EXTERNAL_STORAGE};
+                    // pop up to request permission
+                    requestPermissions(permission, PERMISSION_CODE);
+                } else { // permission granted
                     uploadImg();
                 }
+            } else { // if android version is less than marshmallow 6.0.1
+                uploadImg();
             }
         });
 
         Intent intent = getIntent();
         action = (BOOK_ACTION) intent.getSerializableExtra(OwnedListFragment.BOOK_ACTION_KEY);
         if (action == BOOK_ACTION.EDIT) {
-            editBook = BookDataTransferHelper.receive(getApplicationContext());
+            editBook = intent.getParcelableExtra(OwnedListFragment.BOOK_EDIT_KEY);
             if (editBook != null) {
                 loadBookInformation();
             }
@@ -145,26 +145,34 @@ public class AddEditActivity extends AppCompatActivity {
             if (action == BOOK_ACTION.ADD) {
                 // if no image is attached, bookImageUri will be passed as null
                 model.handleAddBook(isbn, title, author, description, bookImageUri,
-                        this::onSuccess,
+                        this::onAddSuccess,
                         this::onFailure
                 );
             } else if (action == BOOK_ACTION.EDIT) {
                 model.handleEditBook(editBook, isbn, title, author, description, bookImageUri,
-                        this::onSuccess,
+                        this::onEditSuccess,
                         this::onFailure
                 );
             }
-
         }
     }
 
-    public void onSuccess(Book book) {
-        BookDataTransferHelper.transfer(book, getApplicationContext());
-        setResult(RESULT_OK);
+    private void onAddSuccess(Book book) {
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra(NEW_BOOK_INTENT_KEY, book);
+        setResult(RESULT_OK, resultIntent);
         finish();
     }
 
-    public void onFailure(BOOK_ERROR error) {
+    private void onEditSuccess(Book updatedBook) {
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra(OLD_BOOK_INTENT_KEY, editBook);
+        resultIntent.putExtra(UPDATED_BOOK_INTENT_KEY, updatedBook);
+        setResult(RESULT_OK, resultIntent);
+        finish();
+    }
+
+    private void onFailure(BOOK_ERROR error) {
         String errorMessage;
         switch (error) {
             case FAIL_TO_ADD_BOOK:
@@ -186,17 +194,17 @@ public class AddEditActivity extends AppCompatActivity {
         titleLayout.getEditText().setText(editBook.getTitle());
         authorLayout.getEditText().setText(editBook.getAuthor());
         descriptionLayout.getEditText().setText(editBook.getDescription());
-        Uri imageUri = editBook.getImageUri();
-        if (imageUri != null) {
-            Glide.with(this).load(imageUri).into(bookImage);
-            bookImageUri = imageUri;
-        }
+        StorageReference storageReference = FirebaseStorage.getInstance().getReference(editBook.getCoverImageName());
+        GlideApp.with(this)
+                .load(storageReference)
+                .placeholder(R.drawable.no_image)
+                .into(bookImage);
     }
 
     private void openScanner() {
         // TODO: implement the scanner
         Intent intent = new Intent(this, ScannerAddActivity.class);
-        startActivity(intent); // TODO: potentially startActivityForResult
+        startActivityForResult(intent, REQUEST_GET_SCANNED_ISBN);
     }
 
     private void uploadImg() {
@@ -245,6 +253,9 @@ public class AddEditActivity extends AppCompatActivity {
                 );
                 bookImage.setImageURI(bookImageUri);
             }
+        }
+        else if (resultCode == RESULT_OK && requestCode == REQUEST_GET_SCANNED_ISBN) {
+            isbnEditText.setText(data.getStringExtra(ScannerAddActivity.ISBN_KEY));
         }
     }
 
