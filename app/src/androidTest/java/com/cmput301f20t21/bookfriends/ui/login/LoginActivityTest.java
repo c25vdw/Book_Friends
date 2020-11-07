@@ -13,7 +13,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 
 import com.cmput301f20t21.bookfriends.R;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,11 +33,10 @@ import static org.hamcrest.Matchers.allOf;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class LoginActivityTest {
+public class LoginActivityTest extends FirestoreEmulatedTest {
 
     @Rule
     public ActivityScenarioRule<LoginActivity> mActivityTestRule = new ActivityScenarioRule<>(LoginActivity.class);
-
 
     @Test
     public void testLoginSuccess() throws InterruptedException {
@@ -51,7 +53,7 @@ public class LoginActivityTest {
         loginButton.perform(click());
 
         // needed for async operations (i.e. authentication)
-        Thread.sleep(3000);
+        Thread.sleep(waitTime);
 
         ViewInteraction addButton = onView(
                 allOf(withId(R.id.add_button), isDisplayed()));
@@ -73,7 +75,7 @@ public class LoginActivityTest {
         loginButton.perform(click());
 
         // needed for async operations (i.e. authentication)
-        Thread.sleep(3000);
+        Thread.sleep(waitTime);
 
         ViewInteraction errorTextView = onView(
                 allOf(withId(R.id.textinput_error), withText("Password is incorrect"), isDisplayed()));
@@ -95,7 +97,7 @@ public class LoginActivityTest {
         loginButton.perform(click());
 
         // needed for async operations (i.e. authentication)
-        Thread.sleep(3000);
+        Thread.sleep(waitTime);
 
         ViewInteraction errorTextView = onView(
                 allOf(withId(R.id.textinput_error), withText("Cannot find username"), isDisplayed()));
