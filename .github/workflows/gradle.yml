@@ -11,61 +11,61 @@ on:
   
 
 jobs:
-#  build:
-#    runs-on: macOS-latest
-#    steps:
-#    - uses: actions/checkout@v2
-#    - name: Set up JDK 1.8
-#      uses: actions/setup-java@v1
-#      with:
-#        java-version: 1.8
-#
-#      # enable caching
-#    - uses: actions/cache@v2
-#      with:
-#        path: |
-#          ~/.gradle/caches
-#          ~/.gradle/wrapper
-#        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
-#        restore-keys: |
-#          ${{ runner.os }}-gradle-
-#
-#      # generate gradle wrapper tool executable
-#    - name: Generate gradlew (gradle wrapper executable)
-#      run: gradle wrapper
-#    - name: Grant execute permission for gradlew
-#      run: chmod +x gradlew
-#
-#    - name: Grab test google-service.json key
-#      env:
-#        FIREBASE_TEST_SERVICE_KEY: ${{ secrets.FIREBASE_TEST_SERVICE_KEY }}
-#      run: echo $FIREBASE_TEST_SERVICE_KEY > app/google-services.json
-#
-#      # generate debug apk
-#    - name: Assemble Debug APK
-#      run: ./gradlew assembleDebug --stacktrace
-#
-#      # generate intent test apk that will be used in firebase test lab
-#    - name: Assemble Test Debug APK
-#      run: ./gradlew assembleAndroidTest --stacktrace
-#
-#      # export app artifact so we can download if needed
-#    - uses: actions/upload-artifact@v2
-#      with:
-#        name: app-debug
-#        path: app/build/outputs/apk/debug/app-debug.apk
-#
-##      # upload test apks to test lab and start testing
-##    - name: Run tests on Firebase Test Lab
-##      uses: asadmansr/Firebase-Test-Lab-Action@v1.0
-##      with:
-##        arg-spec: '.github/tests.yml:android-pixel-4'
-##      env:
-##        SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-##      continue-on-error: true
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+
+      # enable caching
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+      # generate gradle wrapper tool executable
+    - name: Generate gradlew (gradle wrapper executable)
+      run: gradle wrapper
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    
+    - name: Grab test google-service.json key
+      env:
+        FIREBASE_TEST_SERVICE_KEY: ${{ secrets.FIREBASE_TEST_SERVICE_KEY }}
+      run: echo $FIREBASE_TEST_SERVICE_KEY > app/google-services.json
+
+      # generate debug apk
+    - name: Assemble Debug APK
+      run: ./gradlew assembleDebug --stacktrace
+
+      # generate intent test apk that will be used in firebase test lab
+    - name: Assemble Test Debug APK
+      run: ./gradlew assembleAndroidTest --stacktrace
+
+      # export app artifact so we can download if needed
+    - uses: actions/upload-artifact@v2
+      with:
+        name: app-debug
+        path: app/build/outputs/apk/debug/app-debug.apk
+
+      # upload test apks to test lab and start testing
+    - name: Run tests on Firebase Test Lab
+      uses: asadmansr/Firebase-Test-Lab-Action@v1.0
+      with:
+        arg-spec: '.github/tests.yml:android-pixel-4'
+      env:
+        SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      continue-on-error: true
 
   unitTest:
-    runs-on: macOS-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 1.8
@@ -87,42 +87,3 @@ jobs:
         run: chmod +x gradlew
       - name: Run Unit Tests
         run: ./gradlew test --stacktrace
-
-  intentTest:
-    runs-on: macOS-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
-      - uses: actions/cache@v2
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      - name: Generate gradlew (gradle wrapper executable)
-        run: gradle wrapper
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Install Firebase Tools
-        run: npm install -g firebase-tools
-
-      - name: Setup Emulator Server
-        run: nohup firebase emulators:start --only firestore --import=./test-data &
-
-      - name: Test Emulator Server Connection
-        run: curl "http://localhost:8080"
-
-      - name: Run Instrument Tests
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 29
-          profile: pixel
-          arch: x86
-          script: ./gradlew connectedCheck --stacktrace
