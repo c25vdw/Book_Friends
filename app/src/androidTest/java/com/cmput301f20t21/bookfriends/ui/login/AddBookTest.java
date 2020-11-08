@@ -26,7 +26,6 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static com.cmput301f20t21.bookfriends.ui.login.FirestoreEmulate.waitTime;
 import static org.hamcrest.Matchers.allOf;
 
 
@@ -36,27 +35,22 @@ public class AddBookTest{
 
     BookRepository bookRepository = BookRepository.getInstance();
 
-    @BeforeClass
-    public static void emulate() {
-        FirestoreEmulate.getInstance().setup();
-    }
-
     @Before
     public void setup() throws InterruptedException {
         ActivityScenario.launch(LoginActivity.class);
         ViewInteraction textInputEditText = onView(
                 allOf(withId(R.id.login_username_field), isDisplayed()));
-        textInputEditText.perform(replaceText("test"), closeSoftKeyboard());
+        textInputEditText.perform(replaceText("trung"), closeSoftKeyboard());
 
         ViewInteraction textInputEditText2 = onView(
                 allOf(withId(R.id.login_password_field), isDisplayed()));
-        textInputEditText2.perform(replaceText("bookfriendstest"), closeSoftKeyboard());
+        textInputEditText2.perform(replaceText("123456"), closeSoftKeyboard());
 
         ViewInteraction constraintLayout = onView(
                 allOf(withId(R.id.login_btn), isDisplayed()));
         constraintLayout.perform(click());
 
-        Thread.sleep(waitTime);
+        Thread.sleep(3000);
 
         ViewInteraction floatingAddButton = onView(
                 allOf(withId(R.id.add_button), isDisplayed()));

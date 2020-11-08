@@ -26,16 +26,11 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static com.cmput301f20t21.bookfriends.ui.login.FirestoreEmulate.waitTime;
 import static org.hamcrest.Matchers.allOf;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
 public class LoginActivityTest  {
-    @BeforeClass
-    public static void emulate() {
-        FirestoreEmulate.getInstance().setup();
-    }
 
     @Test
     public void testLoginSuccess() throws InterruptedException {
@@ -53,7 +48,7 @@ public class LoginActivityTest  {
         loginButton.perform(click());
 
         // needed for async operations (i.e. authentication)
-        Thread.sleep(waitTime);
+        Thread.sleep(3000);
 
         ViewInteraction addButton = onView(
                 allOf(withId(R.id.add_button), isDisplayed()));
@@ -76,7 +71,7 @@ public class LoginActivityTest  {
         loginButton.perform(click());
 
         // needed for async operations (i.e. authentication)
-        Thread.sleep(waitTime);
+        Thread.sleep(3000);
 
         ViewInteraction errorTextView = onView(
                 allOf(withId(R.id.textinput_error), withText("Password is incorrect"), isDisplayed()));
@@ -99,7 +94,7 @@ public class LoginActivityTest  {
         loginButton.perform(click());
 
         // needed for async operations (i.e. authentication)
-        Thread.sleep(waitTime);
+        Thread.sleep(3000);
 
         ViewInteraction errorTextView = onView(
                 allOf(withId(R.id.textinput_error), withText("Cannot find username"), isDisplayed()));
