@@ -7,7 +7,7 @@ import org.junit.BeforeClass;
 
 public class FirestoreEmulatedTest {
     protected static boolean emulated = false;
-    protected static int waitTime = 30000;
+    protected static int waitTime = 3000;
 
     @BeforeClass
     public static void setUpFirestoreEmulator() {

@@ -1,6 +1,7 @@
 package com.cmput301f20t21.bookfriends.ui.login;
 
 
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -24,12 +25,12 @@ import static org.hamcrest.Matchers.allOf;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class CreateAccountActivityTest {
-    @Rule
-    public ActivityScenarioRule<CreateAccountActivity> mActivityTestRule = new ActivityScenarioRule<>(CreateAccountActivity.class);
+public class CreateAccountActivityTest extends FirestoreEmulatedTest{
 
     @Test
     public void testIncorrectInput() throws InterruptedException {
+
+        ActivityScenario.launch(CreateAccountActivity.class);
         ViewInteraction usernameField = onView(
                 allOf(withId(R.id.signup_username_field), isDisplayed()));
         usernameField.perform(replaceText("! User"), closeSoftKeyboard());

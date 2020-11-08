@@ -7,6 +7,7 @@
 package com.cmput301f20t21.bookfriends.ui.login;
 
 
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -34,12 +35,9 @@ import static org.hamcrest.Matchers.allOf;
 @LargeTest
 @RunWith(AndroidJUnit4.class)
 public class LoginActivityTest extends FirestoreEmulatedTest {
-
-    @Rule
-    public ActivityScenarioRule<LoginActivity> mActivityTestRule = new ActivityScenarioRule<>(LoginActivity.class);
-
     @Test
     public void testLoginSuccess() throws InterruptedException {
+        ActivityScenario.launch(LoginActivity.class);
         ViewInteraction usernameField = onView(
                 allOf(withId(R.id.login_username_field), isDisplayed()));
         usernameField.perform(replaceText("test"), closeSoftKeyboard());
@@ -62,6 +60,7 @@ public class LoginActivityTest extends FirestoreEmulatedTest {
 
     @Test
     public void testIncorrectPassword() throws InterruptedException {
+        ActivityScenario.launch(LoginActivity.class);
         ViewInteraction usernameField = onView(
                 allOf(withId(R.id.login_username_field), isDisplayed()));
         usernameField.perform(replaceText("test"), closeSoftKeyboard());
@@ -84,6 +83,7 @@ public class LoginActivityTest extends FirestoreEmulatedTest {
 
     @Test
     public void testIncorrectUsername() throws InterruptedException {
+        ActivityScenario.launch(LoginActivity.class);
         ViewInteraction usernameField = onView(
                 allOf(withId(R.id.login_username_field), isDisplayed()));
         usernameField.perform(replaceText("Username WiTh Spaces"), closeSoftKeyboard());
@@ -106,6 +106,7 @@ public class LoginActivityTest extends FirestoreEmulatedTest {
 
     @Test
     public void testOpenSignup() {
+        ActivityScenario.launch(LoginActivity.class);
         ViewInteraction createAccountButton = onView(
                 allOf(withId(R.id.create_account_button), isDisplayed()));
         createAccountButton.perform(click());

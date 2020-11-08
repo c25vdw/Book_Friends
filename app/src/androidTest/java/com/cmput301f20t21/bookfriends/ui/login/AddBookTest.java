@@ -1,6 +1,7 @@
 package com.cmput301f20t21.bookfriends.ui.login;
 
 
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.filters.LargeTest;
@@ -31,27 +32,26 @@ import static org.hamcrest.Matchers.allOf;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class AddBookTest {
+public class AddBookTest extends FirestoreEmulatedTest{
 
     BookRepository bookRepository = BookRepository.getInstance();
-    @Rule
-    public ActivityScenarioRule<LoginActivity> mActivityTestRule = new ActivityScenarioRule<>(LoginActivity.class);
 
     @Before
     public void setup() throws InterruptedException {
+        ActivityScenario.launch(LoginActivity.class);
         ViewInteraction textInputEditText = onView(
                 allOf(withId(R.id.login_username_field), isDisplayed()));
-        textInputEditText.perform(replaceText("trung"), closeSoftKeyboard());
+        textInputEditText.perform(replaceText("test"), closeSoftKeyboard());
 
         ViewInteraction textInputEditText2 = onView(
                 allOf(withId(R.id.login_password_field), isDisplayed()));
-        textInputEditText2.perform(replaceText("123456"), closeSoftKeyboard());
+        textInputEditText2.perform(replaceText("bookfriendstest"), closeSoftKeyboard());
 
         ViewInteraction constraintLayout = onView(
                 allOf(withId(R.id.login_btn), isDisplayed()));
         constraintLayout.perform(click());
 
-        Thread.sleep(3000);
+        Thread.sleep(waitTime);
 
         ViewInteraction floatingAddButton = onView(
                 allOf(withId(R.id.add_button), isDisplayed()));
