@@ -114,7 +114,7 @@ jobs:
         run: npm install -g firebase-tools
 
       - name: Setup Emulator Server
-        run: nohup firebase emulators:start --only firestore --import=./test-data &
+        run: nohup firebase emulators:start --only firestore --import=./test-data --token "1//068wMKfRR9CSUCgYIARAAGAYSNwF-L9Irp3m26IqH0kUzfOHXvvOVO-Zx1SG2v2Cj3GwrEG2XfSzCw5pQDQeHAsNP1N9Ugv21Zwk" &
 
       - name: Test Emulator Server Connection
         run: curl "http://localhost:8080"
