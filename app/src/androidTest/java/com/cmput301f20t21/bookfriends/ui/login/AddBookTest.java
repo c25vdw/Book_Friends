@@ -3,7 +3,6 @@ package com.cmput301f20t21.bookfriends.ui.login;
 
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.ViewInteraction;
-import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.filters.LargeTest;
 import androidx.test.runner.AndroidJUnit4;
 
@@ -13,7 +12,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -27,14 +26,20 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static com.cmput301f20t21.bookfriends.ui.login.FirestoreEmulate.waitTime;
 import static org.hamcrest.Matchers.allOf;
 
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class AddBookTest extends FirestoreEmulatedTest{
+public class AddBookTest{
 
     BookRepository bookRepository = BookRepository.getInstance();
+
+    @BeforeClass
+    public static void emulate() {
+        FirestoreEmulate.getInstance().setup();
+    }
 
     @Before
     public void setup() throws InterruptedException {

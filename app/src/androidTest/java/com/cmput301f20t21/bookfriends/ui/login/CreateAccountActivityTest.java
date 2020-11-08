@@ -25,7 +25,7 @@ import static org.hamcrest.Matchers.allOf;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class CreateAccountActivityTest extends FirestoreEmulatedTest{
+public class CreateAccountActivityTest {
 
     @Test
     public void testIncorrectInput() throws InterruptedException {
